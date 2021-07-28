@@ -4,13 +4,23 @@
   become: true
   pre_tasks:
 
-  - name: install updates (Ubuntu)
+  - name: update repo cache (Ubuntu)
     tags: always
     apt:
-      upgrade: dist
       update_cache: yes
+    changed_when: false
     when: ansible_distribution == "Ubuntu"
 
+- hosts: all
+  become: true
+  tasks:
+  
+  - name: add ssh key to simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa0wOxD4WW9jUQQ+CqxCePbZOH4rU1syeqrRVkN9MsS Grishma default"
+  
 - hosts: web_servers
   become: true
   tasks:
@@ -43,3 +53,20 @@
       name: mariadb-server
       state: latest
     when: ansible_distribution == "Ubuntu"
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: unzip
+    package:
+      name: unzip
+
+  - name: install terraform
+    unarchive: 
+      src: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root
